@@ -144,8 +144,14 @@ const processComponent = (filePath, componentName) => {
         processFunctionalComponents()
         generatedTests = generateTests(componentInfo, componentName, filePath)
 
+        const testDirectory = path.join(filePath, '../__tests__')
+
+        if (!fs.existsSync(testDirectory)) {
+            fs.mkdirSync(testDirectory)
+        }
+
         // Call the new module to merge and save the test files
-        if (fs.existsSync(path.join(filePath, '../', `/__tests__/${componentName}.test.tsx`))) {
+        if (fs.existsSync(path.join(filePath, testDirectory, `${componentName}.test.tsx`))) {
             generatedTests = mergeTestFiles(
                 generatedTests,
                 path.join(filePath, '../', `/__tests__/${componentName}.test.tsx`),
