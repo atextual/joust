@@ -14,7 +14,6 @@ const getComponentType = (node, typeChecker) => {
 const generateTests = (componentInfo, componentName, filePath) => {
     const tests = []
     const props = componentInfo.mainComponent.props
-    const childComponents = componentInfo.childComponents
     const sanitizedName = componentName.replace(/Prefix/, '').replace(/([A-Z])/g, " $1").trim()
 
     Object.entries(props).forEach(([propName, propInfo]) => {
@@ -134,11 +133,13 @@ const generateTests = (componentInfo, componentName, filePath) => {
         })
 
         const template = ({ name, props, type }) => {
-            return `const render${name}Component = (values: any) => {
-    const defaultProps${type ? `: ${type.name}` : ''} = {${Object.entries(props).filter(([_name, info]) => info.required).map(([propName, propInfo]) => {
-        return `
-        ${propName}: ${propInfo.value}`
-    }).join(',')},
+            const requiredProps = Object.entries(props).filter(([_name, info]) => info.required)
+            return `const render${sanitizedName.replace(/\s/g, '')}Component = (values: any) => {
+    const defaultProps${type ? `: ${type.name}` : ''} = {
+        ${requiredProps.length > 0 ? requiredProps.map(([propName, propInfo]) => {
+        return `${propName}: ${propInfo.value}
+        `
+    }).join(',\n') : ''}${requiredProps.length > 0 ? ',\n' : ''}
         testID: '${kebabCase(name)}_test'
     }
     const props${type ? `: ${type.name}` : ''} = { ...defaultProps, ...values }
